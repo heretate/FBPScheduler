@@ -1,0 +1,72 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Entity Schema",
+    "description": "A framework for the format of process entity json data",
+    "type": "object",
+    "definitions": {
+        "Job": {
+            "$id": "#Job",
+            "type": "object",
+            "properties": {
+                "Object Type": {"const": "Job"},
+                "Name": {"type": "string"},
+                "Description": {"type": "string"},
+                "Exception Handling": {"type": "string",
+                             "enum": ["kill", "repeat", "skip"]
+                },
+                "Failure Handling": {"type":  "string"},
+                "Success Code": {"anyOf": [{"type": "string"},
+                                           {"type": "number"}]
+                },
+                "Dependencies": {"type": "array",
+                                 "items": {"type": "string"}
+                },
+                "Conditions": {"type": "array",
+                               "items": {"type": "array"}
+                },
+                "Run Type": {"type": "string",
+                             "enum": ["python", "cmd"]
+                            },
+                "Command": {"type": "string"},
+                "Parameters": {"type": "object"},
+                "Parameter Delimiter": {"type": "string"},
+                "Module": {"type": "string"}
+                },
+            "required": ["Object Type","Name", "Description",
+            "Dependencies", "Run Type", "Command", "Parameters"]
+            },
+        "JobGroup": {
+            "$id": "#JobGroup",
+            "type": "object",
+            "properties": {
+                "Object Type": {"const": "JobGroup"},
+                "Name": {"type": "string"},
+                "Description": {"type": "string"},
+                "Exception Handling": {"type": "string",
+                             "enum": ["kill", "repeat", "skip"]
+                },
+                "Failure Handling": {"type": "string"},
+                "Dependencies": {"type": "array",
+                                 "items": {"type": "string"}
+                },
+                "Conditions": {"type": "array",
+                               "items": {"type": "array",
+                                         "items": {"type": "string"}
+                               }
+                },
+                "Jobs": {"type": "array",
+                         "items": {"oneOf": [
+                                       {"$ref": "#/definitions/Job"},
+                                   {"$ref": "#/definitions/JobGroup"}
+                                   ]}
+                }
+            },
+            "required": ["Object Type","Name", "Description",
+             "Dependencies", "Jobs"]
+        }
+    },
+    "oneOf": [
+        {"$ref": "#/definitions/Job"},
+        {"$ref": "#/definitions/JobGroup"}
+    ]
+}
