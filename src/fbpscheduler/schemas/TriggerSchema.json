@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Trigger Schema",
+    "description": "A framework for the format of trigger objects of each entity",
+    "type": "object",
+    "properties": {
+            "Trigger Type": {"type": "string",
+                             "enum": ["datetime", "cron", "instant"]},
+            "Trigger Time": {"type": "string",
+                             "format":  "datetime"},
+            "Cron Expression": {"type": "string"},
+            "Modifier Action": {"type": "string",
+                               "enum": ["delete", "unmodify", "keep"]}
+    },
+    "required": ["Trigger Type"]
+}
