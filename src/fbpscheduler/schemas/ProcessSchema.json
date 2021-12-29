@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Process Schema",
+    "description": "A framework for the format of the process json data",
+    "type": "object",
+    "definitions": {
+        "Entity": {"$ref": "file:EntitySchema.json" }
+    },
+    "properties": {
+        "Object Type": {"const": "Process"},
+        "Name": {"type": "string"},
+        "Description": {"type": "string"},
+        "Deadline": {"type": "string",
+                     "format": "time"
+        },
+        "Exception Handling": {"type": "string",
+                             "enum": ["kill", "repeat", "skip"]
+        },
+        "Failure Handling": {"type": "string"},
+        "Trigger": {"$ref": "file:TriggerSchema.json" },
+        "Dependencies": {"type": "array",
+                         "items": {"type": "string"}
+        },
+        "Conditions": {"type": "array",
+                       "items": {"type": "array",
+                                 "items": {"type": "string"}
+                       }
+        },
+        "Entity List": {"type": "array",
+                       "items": {"$ref": "#/definitions/Entity"}
+        }
+    },
+    "required": ["Object Type", "Name", "Description", "Deadline", "Trigger",
+     "Dependencies", "Entity List"]
+    
+    
+}
