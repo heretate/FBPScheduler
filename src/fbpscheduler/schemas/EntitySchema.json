@@ -11,6 +11,9 @@
                 "Object Type": {"const": "Job"},
                 "Name": {"type": "string"},
                 "Description": {"type": "string"},
+                "Deadline": {"type": "string",
+                    "format": "time"
+                },
                 "Exception Handling": {"type": "string",
                              "enum": ["kill", "repeat", "skip"]
                 },
@@ -20,9 +23,6 @@
                 },
                 "Dependencies": {"type": "array",
                                  "items": {"type": "string"}
-                },
-                "Conditions": {"type": "array",
-                               "items": {"type": "array"}
                 },
                 "Run Type": {"type": "string",
                              "enum": ["python", "cmd"]
@@ -42,17 +42,15 @@
                 "Object Type": {"const": "JobGroup"},
                 "Name": {"type": "string"},
                 "Description": {"type": "string"},
+                "Deadline": {"type": "string",
+                    "format": "time"
+                },
                 "Exception Handling": {"type": "string",
                              "enum": ["kill", "repeat", "skip"]
                 },
                 "Failure Handling": {"type": "string"},
                 "Dependencies": {"type": "array",
                                  "items": {"type": "string"}
-                },
-                "Conditions": {"type": "array",
-                               "items": {"type": "array",
-                                         "items": {"type": "string"}
-                               }
                 },
                 "Jobs": {"type": "array",
                          "items": {"oneOf": [

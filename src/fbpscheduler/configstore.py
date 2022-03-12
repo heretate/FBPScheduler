@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio as aio
 from dataclasses import dataclass
-from scheduler.abc import Trigger
+from fbpscheduler.abc import Trigger
 from datetime import datetime
 
 @dataclass

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import traceback
-from scheduler.enums import Fields
+from fbpscheduler.enums import Fields
 import asyncio as aio
 from functools import partial
 
@@ -83,7 +83,10 @@ async def cmd_evaluator(command: str, arguments: str = "", timeout: float | int 
     proc = await aio.create_subprocess_shell(cmd_string, stdout=aio.subprocess.PIPE,
                                              stderr=aio.subprocess.PIPE)
 
-    stdout, stderr = await aio.wait_for(proc.communicate(), timeout=timeout)
+    try:
+        stdout, stderr = await aio.wait_for(proc.communicate(), timeout=timeout)
+    except Exception as e:
+        return 1, f"Exception {e}"
 
     encoding = "utf-8"
     logging_info = ""

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from scheduler.enums import ObjectType, DateModifierPolicy, TriggerType, Fields
-from scheduler.objects import Job, JobGroup, Process
-from scheduler.triggers import CronTrigger, DateTrigger, InstantTrigger
+from fbpscheduler.enums import ObjectType, DateModifierPolicy, TriggerType, Fields
+from fbpscheduler.objects import Job, JobGroup, Process
+from fbpscheduler.triggers import CronTrigger, DateTrigger, InstantTrigger
 from dateutil.parser import parse
 
 

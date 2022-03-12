@@ -15,15 +15,14 @@ import asyncio as aio
 from collections.abc import Callable
 from functools import partial
 
-from scheduler import schema_dir
-from scheduler.abc import Scheduler
-from scheduler.cache import Cache
-from scheduler.factory import EntityFactory, TriggerFactory
+from fbpscheduler import schema_dir
+from fbpscheduler.abc import Scheduler
+from fbpscheduler.cache import Cache
+from fbpscheduler.factory import EntityFactory, TriggerFactory
 from json import load as json_load, dump as json_dump, JSONDecodeError
-from scheduler.marshalling import validate_json
-from scheduler.enums import Fields, Status
-from scheduler.configstore import ConfigStore
-from uuid import uuid4
+from fbpscheduler.marshalling import validate_json
+from fbpscheduler.enums import Fields, Status
+from fbpscheduler.configstore import ConfigStore
 
 from pickle import dump, load
 
@@ -127,7 +126,7 @@ class LocalScheduler(Scheduler):
 
     async def _condition_check(self):
         for process in self.initiated_processes:
-            if process.check_conditions():
+            if process.status != Status.finished:
                 #print(process.entity_id + " passed conditions check")
                 self.run_queue.append(process)
         self.initiated_processes = list(filter(lambda x: x not in self.run_queue, self.initiated_processes))

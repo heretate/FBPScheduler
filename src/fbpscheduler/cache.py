@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 26 08:46:05 2021
-
-@author: ehuan
-"""
-
-from scheduler.abc import Node
-from scheduler.enums import Fields
-from scheduler.parse import flat_args
+from fbpscheduler.abc import Node
+from fbpscheduler.enums import Fields
+from fbpscheduler.parse import flat_args
 import json
 
 import logging

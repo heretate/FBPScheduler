@@ -4,10 +4,10 @@ from collections.abc import Callable
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, fields, field
 
-from datetime import datetime
-from scheduler.evaluators import python_evaluator
-from scheduler.enums import ObjectType, Status, DateModifierPolicy, ExceptionHandlerPolicy, Fields as SchedulerFields
-from scheduler.marshalling import getstate_type_handler, setstate_type_handler
+from datetime import datetime, date
+from fbpscheduler.evaluators import python_evaluator
+from fbpscheduler.enums import ObjectType, Status, DateModifierPolicy, ExceptionHandlerPolicy, Fields as SchedulerFields
+from fbpscheduler.marshalling import getstate_type_handler, setstate_type_handler
 import asyncio as aio
 
 class Scheduler(metaclass=ABCMeta):
@@ -25,9 +25,10 @@ class Entity(metaclass=ABCMeta):
     object_type: str
     description: str = ""
     dependencies: list(str) = field(default_factory=list)
-    conditions: list(str) = field(default_factory=list)
     start_time: None = None
     end_time: None = None
+    timeout: None = None
+    deadline: str = None
     status: Status = Status.initialized
     
 
@@ -49,7 +50,6 @@ class Entity(metaclass=ABCMeta):
             setattr(self, k, getattr(self, k))
         
         self.dependencies = dict.fromkeys(self.dependencies)
-        self.conditions = self.conditions[:]
         self.object_type = ObjectType(self.object_type)
         if type(self.exception_handling) == str:
             self.exception_handling = ExceptionHandlerPolicy[self.exception_handling]
@@ -64,12 +64,6 @@ class Entity(metaclass=ABCMeta):
             return self.entity_id == other.entity_id
     
         return False
-    
-    def check_conditions(self, cache=None):
-        if self.status != Status.finished:
-            return all([self.evaluate_condition(condition_string, cache) for condition_string in self.conditions])
-        else:
-            return False
             
     def evaluate_condition(self, command, cache = None):
         module, function = command[0], command[1]
@@ -78,15 +72,23 @@ class Entity(metaclass=ABCMeta):
             params = cache.get_parameters(self.entity_id)
         return python_evaluator(module, function, params, cache)
         
-    def _start(self):
+    def _start(self, inherited_deadline: datetime = None):
         if self.status == Status.initialized:
             self.start_time = datetime.now()
+            if self.deadline:
+                timeout = datetime.combine(date.min, datetime.strptime(self.deadline, '%H:%M:%S').time()) - datetime.min
+                self.deadline = min(datetime.now() + timeout, inherited_deadline)
+            else:
+                self.deadline = inherited_deadline
+            self.timeout = self.deadline - datetime.now()
             self.status = Status.running
         elif self.status == Status.unsuccessful:
             self.status = Status.re_running
         else:
             raise NameError("Invalid status for start of execution")
-
+        
+        self.timeout = self.deadline - datetime.now()
+        
     def _end(self, execution_status_code):
 
         if execution_status_code == Status.finished.value:

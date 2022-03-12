@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from pandas import DataFrame
 from collections.abc import Callable
-from scheduler.enums import Fields, Status, RunType, ExceptionHandlerPolicy, DateModifierPolicy, ObjectType, TriggerType
+from fbpscheduler.enums import Fields, Status, RunType, ExceptionHandlerPolicy, DateModifierPolicy, ObjectType, TriggerType
 
 ENUMS = frozenset({"Fields": Fields,
                    "Status": Status,

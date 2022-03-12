@@ -12,8 +12,6 @@ class Fields(str, Enum):
 
     exception_handling = "Exception Handling"
 
-    conditions = "Conditions"
-
     dependencies = "Dependencies"
 
     start_time = "Start Time"

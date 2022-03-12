@@ -1,32 +1,25 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 26 09:58:49 2021
-
-@author: ehuan
-"""
-
 from __future__ import annotations
 
 import pandas as pd 
-from scheduler.parse import parse_arguments, fill_string, flat_args
-from scheduler.enums import Status, RunType, ExceptionHandlerPolicy
-from scheduler.evaluators import python_evaluator, cmd_evaluator
-from scheduler.abc import Entity
-from scheduler.marshalling import getstate_type_handler, setstate_type_handler
+from fbpscheduler.parse import parse_arguments, fill_string, flat_args
+from fbpscheduler.cache import Cache
+from fbpscheduler.enums import Status, RunType, ExceptionHandlerPolicy
+from fbpscheduler.evaluators import python_evaluator, cmd_evaluator
+from fbpscheduler.abc import Entity
+from fbpscheduler.marshalling import getstate_type_handler, setstate_type_handler
 from dataclasses import dataclass
 
-from datetime import datetime, date
-
+from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
 
 def status_handler(func):
-    async def wrapper_status_handler(self, cache, *args, **kwargs):
-        self._start()
+    async def wrapper_status_handler(self, cache: Cache, inherited_deadline: datetime = None):
+        self._start(inherited_deadline)
         cache.read_state(self.get_metadata())
 
-        status_code = await func(self, cache, *args, **kwargs)
+        status_code = await func(self, cache)
         status_code = self._end(status_code)
         
         cache.read_state(self.get_metadata())
@@ -122,14 +115,14 @@ class Job(Entity):
         arguments = parse_arguments(self.parameters, params)
         flat_arguments = flat_args(arguments, self.parameter_delimiter)
         command = fill_string(self.command, params)
-        
+                
         if self.run_type == RunType.python:
             module = fill_string(self.module, params)
             self.log("Executing: " + command + " " + flat_arguments + " from " + module)
-            self.return_code, logging_info = await python_evaluator(module, command, arguments, cache)
+            self.return_code, logging_info = await python_evaluator(module, command, arguments, cache, self.timeout)
         elif self.run_type == RunType.cmd:
             self.log("Executing: " + command + " " + flat_arguments)
-            self.return_code, logging_info = await cmd_evaluator(command, flat_arguments)
+            self.return_code, logging_info = await cmd_evaluator(command, flat_arguments, self.timeout)
         else:
             raise ValueError("Unrecognized run type")
         
@@ -173,16 +166,17 @@ class JobGroup(Graph, Entity):
         super().__init__(**kwargs)
 
     @status_handler
-    async def execute(self, cache):
+    async def execute(self, cache: Cache):
         if self.status == Status.running:
             self.generate_graph()
         graph_sum = 1
         execution_status_code = 0
+
         while graph_sum != 0:
             graph_sum = self.graph.to_numpy().sum()
             for index, row in self.graph.iterrows():
-                if (row.sum() == 0) and (self.graph_entities[index].check_conditions()):
-                    child_status_code = await self.graph_entities[index].execute(cache)
+                if (row.sum() == 0) and (self.graph_entities[index].status != Status.finished):
+                    child_status_code = await self.graph_entities[index].execute(cache, self.deadline)
                     if child_status_code == 0:
                         self.graph[index] = 0
                     else:
@@ -193,7 +187,7 @@ class JobGroup(Graph, Entity):
 
         return execution_status_code
 
-    def terminate(self, cache):
+    def terminate(self, cache: Cache):
         if self.status != Status.finished:
             self.status = Status.failure
             self.end_time = datetime.now()
@@ -212,13 +206,13 @@ class JobGroup(Graph, Entity):
 @dataclass(init=False)
 class Process(JobGroup):
 
-    deadline: str = None
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.timeout = datetime.combine(date.min, datetime.strptime(self.deadline, '%H:%M:%S').time()) - datetime.min
-        self.deadline = datetime.now() + self.timeout
 
+    
+    @status_handler
+    async def execute(self, cache: Cache):
+        super().execute(self, cache, self.deadline)
 
         
             

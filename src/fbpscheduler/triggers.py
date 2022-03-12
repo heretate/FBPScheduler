@@ -1,4 +1,4 @@
-from scheduler.abc import Trigger
+from fbpscheduler.abc import Trigger
 from croniter import croniter
 from datetime import datetime
 from dateutil import parser

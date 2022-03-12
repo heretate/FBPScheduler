@@ -21,11 +21,6 @@
         "Dependencies": {"type": "array",
                          "items": {"type": "string"}
         },
-        "Conditions": {"type": "array",
-                       "items": {"type": "array",
-                                 "items": {"type": "string"}
-                       }
-        },
         "Entity List": {"type": "array",
                        "items": {"$ref": "#/definitions/Entity"}
         }
