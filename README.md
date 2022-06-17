@@ -1,3 +1,3 @@
 # FBPScheduler
 
-This is a simple scheduler package. This package is intended to be saved as reference for development of a scheduler package with broader scope.
+This is a simple scheduler package. Instructions for how to use this package will be provided at a further date.
